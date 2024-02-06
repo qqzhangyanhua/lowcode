@@ -1,87 +1,65 @@
 {
-  "name": "lowcode",
-  "publisher": "zhangyanhua",
-  "displayName": "lowcode",
+  "name": "zyh-low-template",
+  "displayName": "zyh-low-template",
   "description": "",
+  "publisher": "zhangyanhua",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.79.0"
+    "vscode": "^1.85.2"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
-  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:*"
+  ],
+  "permissions": [
+    "workspace"
+  ],
+  "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "type": "object",
-      "title": "Your Extension",
+      "title": "zyh lowCode",
       "properties": {
-        "lowcode.vue2Template": {
-          "type": "string",
-          "default": "<template>\n  <div></div>\n</template>\n\n<script>\nexport default {\n\n}\n</script>\n\n<style src='./index.scss'>\n\n</style>",
-          "description": "The Vue template to use for file generation."
+        "myExtension.templates": {
+          "type": "array",
+          "default": [
+            "/Users/zhangyanhua/Desktop/test/lowCodeTemplate"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "The templates for file generation."
         }
       }
     },
     "commands": [
       {
-        "command": "lowcode.vue3Template",
-        "title": "生成vue3模板"
-      },
-      {
-        "command": "lowcode.vue2Template",
-        "title": "生成vue2模板"
-      },
-      {
-        "command": "lowcode.vue2DialogTemp",
-        "title": "生成vue2dialog模板"
+        "command": "extension.generateFile",
+        "title": "生成常用模板",
+        "category": "My Extension"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "submenu": "nihao",
+          "command": "extension.generateFile",
           "group": "navigation",
           "when": "explorerResourceIsFolder"
         }
-      ],
-      "nihao": [
-        {
-          "command": "lowcode.vue2Template",
-          "group": "navigation"
-        },
-        {
-          "command": "lowcode.vue3Template",
-          "group": "navigation"
-        },
-        {
-          "command": "lowcode.vue2DialogTemp",
-          "group": "navigation"
-        }
       ]
-    },
-    "submenus": [
-      {
-        "id": "nihao",
-        "label": "生成模板",
-        "when": "explorerResourceIsFolder"
-      }
-    ]
+    }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.79.0",
+    "@types/vscode": "^1.85.2",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
@@ -91,9 +69,6 @@
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
     "typescript": "^4.9.5",
-    "ts-loader": "^9.4.2",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1",
     "@vscode/test-electron": "^2.2.3"
   }
 }

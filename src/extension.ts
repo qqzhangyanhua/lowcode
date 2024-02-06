@@ -1,18 +1,18 @@
 import * as vscode from "vscode";
-import path from "path";
-import { vue2Template, scssTemplate, vue3Template ,vue2DialogTemp} from "./code";
+import * as fs from "fs";
+import * as path from "path";
+
 function generateFiles(workspacePath: string, temp: string) {
   //获取文本编辑器中打开的文件
-  console.log("开始执行====================");
-
+  console.log("开始执行===================1111111=");
   const vueFilePath = vscode.Uri.file(`${workspacePath}/index.vue`); // Vue 文件路径
-  const scssFilePath = vscode.Uri.file(`${workspacePath}/index.scss`); // SCSS 文件路径
+  // const scssFilePath = vscode.Uri.file(`${workspacePath}/index.scss`); // SCSS 文件路径
 
   // 创建或覆盖 Vue 文件
   vscode.workspace.fs.writeFile(vueFilePath, Buffer.from(temp));
 
   // 创建或覆盖 SCSS 文件
-  vscode.workspace.fs.writeFile(scssFilePath, Buffer.from(scssTemplate));
+  // vscode.workspace.fs.writeFile(scssFilePath, Buffer.from(scssTemplate));
 
   // 在编辑器中打开生成的文件
   vscode.workspace.openTextDocument(vueFilePath).then((doc) => {
@@ -20,34 +20,45 @@ function generateFiles(workspacePath: string, temp: string) {
   });
 }
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Congratulations, your extension "lowcode" is now active!');
+  vscode.commands.registerCommand("extension.generateFile", (fileUri) => {
+    console.log("激活了,开始工作========", fileUri);
+    let config = vscode.workspace.getConfiguration("myExtension");
 
-  let disposable = vscode.commands.registerCommand(
-    "lowcode.vue3Template",
-    (fileUri) => {
-      generateFiles(fileUri.path, vue3Template);
-
-      vscode.window.showInformationMessage("生成vue3Template模板成功");
+    // 读取模板
+    let templates: any = config.get("templates") || [];
+    const folderPath = templates[0];
+    const templateArr = readFilesInFolder(folderPath);
+    vscode.window.showQuickPick(templateArr).then((template) => {
+      if (template) {
+        generateFiles(fileUri.path, template.value);
+        vscode.window.showInformationMessage(`生成${template.label}模板成功`);
+      }
+    });
+  });
+  //   context.subscriptions.push(disposable2);
+}
+interface Template {
+  label: string;
+  value: string;
+}
+function readFilesInFolder(folderPath: string) {
+  const files = fs.readdirSync(folderPath);
+  const templateArr: Template[] = [];
+  files.forEach((file) => {
+    const filePath = path.join(folderPath, file);
+    const stats = fs.statSync(filePath);
+    console.log(stats.isFile(), path.extname(filePath));
+    if (stats.isFile() && path.extname(filePath) === ".js") {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      // 在这里可以对文件内容进行处理
+      const val = eval(fileContent);
+      templateArr.push({
+        label: val.name,
+        value: val.template,
+      });
     }
-  );
-  let disposable2 = vscode.commands.registerCommand(
-    "lowcode.vue2Template",
-    (fileUri) => {
-      generateFiles(fileUri.path, vue2Template);
-      vscode.window.showInformationMessage("生成vue2Template模板成功");
-    }
-  );
-  let disposable3 = vscode.commands.registerCommand(
-    "lowcode.vue2DialogTemp",
-    (fileUri) => {
-      generateFiles(fileUri.path, vue2DialogTemp);
-      vscode.window.showInformationMessage("生成vue2DialogTemp模板成功");
-    }
-  );
-  context.subscriptions.push(disposable2);
-  context.subscriptions.push(disposable);
-  context.subscriptions.push(disposable3);
-
+  });
+  return templateArr;
 }
 
 export function deactivate() {}
